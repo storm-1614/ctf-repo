@@ -1,0 +1,25 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Mon May 18 16:34:56 2026
+Invocation: foremost QR_code.png 
+Output directory: /data/project/ctf-repo/misc/buuctf/二维码/output
+Configuration file: /etc/foremost.conf
+------------------------------------------------------------------
+File: QR_code.png
+Start: Mon May 18 16:34:56 2026
+Length: 672 B (672 bytes)
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+0:	00000000.zip 	      202 B 	        471 	 
+1:	00000000.png 	      471 B 	          0 	  (280 x 280)
+Finish: Mon May 18 16:34:56 2026
+
+2 FILES EXTRACTED
+	
+zip:= 1
+png:= 1
+------------------------------------------------------------------
+
+Foremost finished at Mon May 18 16:34:56 2026
