@@ -1,0 +1,25 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Tue May 26 10:20:46 2026
+Invocation: foremost misc2.jpg 
+Output directory: /data/project/ctf-repo/misc/buuctf/爱因斯坦/爱因斯坦/output
+Configuration file: /etc/foremost.conf
+------------------------------------------------------------------
+File: misc2.jpg
+Start: Tue May 26 10:20:46 2026
+Length: 66 KB (68252 bytes)
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+0:	00000000.jpg 	      66 KB 	          0 	 
+1:	00000132.zip 	      234 B 	      68019 	 
+Finish: Tue May 26 10:20:46 2026
+
+2 FILES EXTRACTED
+	
+jpg:= 1
+zip:= 1
+------------------------------------------------------------------
+
+Foremost finished at Tue May 26 10:20:46 2026

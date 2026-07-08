@@ -1,0 +1,25 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Fri May 29 09:41:05 2026
+Invocation: foremost 4a81409d-f24b-4915-adc9-304e6faf60f2.jpg 
+Output directory: /data/project/ctf-repo/misc/buuctf/小明的保险箱/output
+Configuration file: /etc/foremost.conf
+------------------------------------------------------------------
+File: 4a81409d-f24b-4915-adc9-304e6faf60f2.jpg
+Start: Fri May 29 09:41:05 2026
+Length: 78 KB (80028 bytes)
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+0:	00000000.jpg 	      78 KB 	          0 	 
+1:	00000156.rar 	      125 B 	      79903 	 Password Protected:
+Finish: Fri May 29 09:41:05 2026
+
+2 FILES EXTRACTED
+	
+jpg:= 1
+rar:= 1
+------------------------------------------------------------------
+
+Foremost finished at Fri May 29 09:41:05 2026

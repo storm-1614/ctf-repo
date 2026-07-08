@@ -1,0 +1,25 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Fri May 29 09:38:09 2026
+Invocation: foremost 9e3ec8c2-38c7-41cf-b5d7-abe7872de4c3.jpg 
+Output directory: /data/project/ctf-repo/misc/buuctf/ningen/output
+Configuration file: /etc/foremost.conf
+------------------------------------------------------------------
+File: 9e3ec8c2-38c7-41cf-b5d7-abe7872de4c3.jpg
+Start: Fri May 29 09:38:09 2026
+Length: 37 KB (38893 bytes)
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+0:	00000000.jpg 	      37 KB 	          0 	 
+1:	00000075.zip 	      205 B 	      38689 	 
+Finish: Fri May 29 09:38:09 2026
+
+2 FILES EXTRACTED
+	
+jpg:= 1
+zip:= 1
+------------------------------------------------------------------
+
+Foremost finished at Fri May 29 09:38:09 2026
