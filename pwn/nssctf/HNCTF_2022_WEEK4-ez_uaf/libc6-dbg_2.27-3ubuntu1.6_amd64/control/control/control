@@ -1,0 +1,18 @@
+Package: libc6-dbg
+Source: glibc
+Version: 2.27-3ubuntu1.6
+Architecture: amd64
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Installed-Size: 39474
+Depends: libc6 (= 2.27-3ubuntu1.6)
+Provides: libc-dbg
+Section: debug
+Priority: optional
+Multi-Arch: same
+Homepage: https://www.gnu.org/software/libc/libc.html
+Description: GNU C Library: detached debugging symbols
+ This package contains the detached debugging symbols for the GNU C
+ library.
+Original-Maintainer: GNU Libc Maintainers <debian-glibc@lists.debian.org>
+Original-Vcs-Browser: https://salsa.debian.org/glibc-team/glibc
+Original-Vcs-Git: https://salsa.debian.org/glibc-team/glibc.git
