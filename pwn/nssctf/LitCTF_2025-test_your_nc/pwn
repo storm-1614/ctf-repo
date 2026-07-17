@@ -1,0 +1,16 @@
+#!/bin/python3
+import os
+
+print("input your command")
+
+blacklist = ['cat','ls',' ','cd','echo','<','${IFS}','sh','\\']
+
+while True:
+    command = input()
+    for i in blacklist:
+        if i in command:
+            exit(0)
+    os.system(command)
+
+
+
