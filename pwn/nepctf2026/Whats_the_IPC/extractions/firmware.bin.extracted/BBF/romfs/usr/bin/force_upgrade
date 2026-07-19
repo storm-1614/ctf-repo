@@ -1,0 +1,146 @@
+#!/bin/sh
+current_soc_name=xs7302
+current_force_upgrade_pwd=Td2N3ww1.0_tenda_force_upgrade
+u_pan=/dev/mmcblk0
+
+disk_umount(){
+	cd /
+	umount /mnt/system
+	if [ $? -ne 0 ];then
+		umount -l /mnt/system
+		if [ $? -eq 0 ];then
+			echo "storage device force umount successfully"
+		fi
+	else
+		echo "storage device umount successfully"
+	fi	
+}
+
+if [ ! -e $u_pan ];then
+	echo "SD card does not exist"
+	exit
+fi
+
+if [ -e $u_pan'p1' ];then
+	u_pan=/dev/mmcblk0p1
+	else
+	u_pan=/dev/mmcblk0
+fi
+
+mount $u_pan /mnt/system
+if [ $? -ne 0 ];then
+	echo "FAT SD card mount fail"
+	exit
+fi
+
+#增加电机运行检测
+if [ ! -f /mnt/system/modefile ];then
+	echo "modefile do not exist"
+else
+	if [ ! -f /mnt/system/motor_ctrl_app ];then
+		echo "motor_ctrl_app do not exist"
+	else
+		motormode=$(cat /mnt/system/modefile | grep "motormode" | awk -F ' ' '{print $2}')
+		if [ -z "$motormode" ];then
+			echo "motormode error"
+		else
+			/mnt/system/motor_ctrl_app $motormode
+		fi
+	fi
+fi
+
+if [ ! -f /mnt/system/$current_soc_name'_force_upgrade.bin' ];then
+	echo "/mnt/system/${current_soc_name}_force_upgrade.bin not exist"
+	disk_umount
+	exit
+fi
+
+cd /mnt/system
+force_upgrade_info=$(hexdump -Cn 65536 $current_soc_name'_force_upgrade.bin' | awk -F '|' '{print $2}')
+force_upgrade_info=$(echo $force_upgrade_info | sed s/[[:space:]]//g)
+
+#pkg header verif
+current_soc_name_len=${#current_soc_name}
+current_force_upgrade_pwd_len=${#current_force_upgrade_pwd}
+soc_name=$(echo ${force_upgrade_info:0:$current_soc_name_len})
+force_upgrade_pwd=$(echo ${force_upgrade_info:20:$current_force_upgrade_pwd_len})
+
+if [[ $soc_name = $current_soc_name && $force_upgrade_pwd = $current_force_upgrade_pwd ]];then
+	echo "tenda the upgrade package information is verified ok"
+else
+	echo "tenda the upgrade package information is verified fail"
+	disk_umount
+	exit
+fi
+
+: <<'COMMENT'
+#verif upgrade package MD5
+system_info=/opt/sav/Config/tenda_system_info
+force_upgrade_pkg_md5=$(md5sum /mnt/system/$current_soc_name'_force_upgrade.bin' | awk -F ' ' '{print $1}')
+if [ ! -f $system_info ];then
+	touch $system_info
+	echo "force_upgrade_pkg_md5:$force_upgrade_pkg_md5" > $system_info
+else
+	save_md5=$(cat $system_info | grep force_upgrade_pkg_md5 | awk -F ':' '{print $2}')
+	if [ $save_md5 == $force_upgrade_pkg_md5 ];then
+		echo "The device has been force upgrade"
+		disk_umount
+		exit
+	else
+		echo "force_upgrade_pkg_md5:$force_upgrade_pkg_md5" > $system_info
+	fi
+fi
+COMMENT
+
+#初始化配置
+rm /opt/sav/Config/Config*
+#sed -i '/ssid=/cssid=""' /opt/sav/Config/wpa_supplicant.conf
+#sed -i '/#mac=/c#mac=""' /opt/sav/Config/wpa_supplicant.conf
+
+echo 89 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio89/direction
+echo 113 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio113/direction
+
+#LED_function
+RED(){
+	while true
+	do
+		echo 1 > /sys/class/gpio/gpio113/value
+		sleep 0.5
+		echo 0 > /sys/class/gpio/gpio113/value
+		sleep 0.5	
+	done
+}
+
+BLUE(){
+	while true
+	do
+		value=`mount | grep $u_pan | wc -l`
+		if [ $value -eq 0 ];then
+			break
+		fi
+		echo 1 > /sys/class/gpio/gpio89/value
+		sleep 0.5
+		echo 0 > /sys/class/gpio/gpio89/value
+		sleep 0.5		
+	done
+}
+
+#pkg file verif
+echo "force upgrade start ......."
+#开始升级任务 蓝灯开始闪烁
+BLUE &
+upgradeblock=`cat /proc/partitions | grep mtdblock | sed -n '$p'| awk -F ' ' '{print $4}'`
+dd if=$current_soc_name'_force_upgrade.bin' of=/dev/$upgradeblock skip=1 bs=64k count=243 conv=fsync
+sync
+sync
+sync
+disk_umount
+#完成升级任务 红灯开始闪烁
+echo "force upgrade finish , please unplug the disk device and restart"
+RED
+
+exit
+
+

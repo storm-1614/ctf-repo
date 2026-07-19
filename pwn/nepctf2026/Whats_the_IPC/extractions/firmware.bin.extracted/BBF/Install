@@ -1,0 +1,17 @@
+{
+	"Devices" :
+	[
+		[ "NVR_4H", "1.00" ]
+
+	],
+	
+	"Commands" :
+	[
+		"burn u-boot.bin.img boot", 
+		"burn zImage-dtb.img kernel",
+		"burn romfs-x.squash.img rootfs",
+		"burn user-x.squash.img user",
+		"burn web-x.squash.img web",
+		"burn custom-x.squash.img custom"
+	]
+}

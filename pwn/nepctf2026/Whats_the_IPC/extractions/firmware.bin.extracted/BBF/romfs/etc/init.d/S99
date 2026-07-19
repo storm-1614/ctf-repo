@@ -1,0 +1,74 @@
+#!/bin/sh
+
+#load ko
+cp /opt/app/ko.tar.xz  /var -rf
+cd /var
+xz -d /var/ko.tar.xz
+tar -xvf /var/ko.tar
+cd ko;sh load520_mdk_asic -i --sensor0 os04d10;cd -
+
+ifconfig lo 127.0.0.1
+ifconfig eth0 192.168.1.203
+
+
+if [ -f /opt/app/appconfig.tar.xz ]; then
+	cp /opt/app/appconfig.tar.xz  /var -rf
+	cd /var
+	xz -d /var/appconfig.tar.xz
+	tar -xf /var/appconfig.tar
+	rm /var/appconfig.tar
+	/var/system/auto-appconfig-select.sh
+	rm /var/system -r
+else 
+	/opt/app/system/auto-appconfig-select.sh
+fi
+
+# decompress font.tar.xz
+if [ -f /opt/app/font.tar.xz ]; then
+	cp /opt/app/font.tar.xz  /var -rf
+	cd /var
+	xz -d /var/font.tar.xz
+	tar -xf /var/font.tar
+	rm /var/font.tar
+fi
+
+# decompress gui.tar.xz
+if [ -f /opt/app/gui.tar.xz ]; then
+	cp /opt/app/gui.tar.xz  /var -rf
+	cd /var
+	xz -d /var/gui.tar.xz
+	tar -xf /var/gui.tar
+	rm /var/gui.tar
+fi
+
+# decompress model.tar.xz
+if [ -f /opt/app/model.tar.xz ]; then
+	cp /opt/app/model.tar.xz  /var -rf
+	cd /var
+	xz -d /var/model.tar.xz
+	tar -xf /var/model.tar
+	rm /var/model.tar
+fi
+
+xuart=`awk '/^(xuart)/{ print $2 }' /proc/vss/bootpara`
+if [ $xuart == '1' ];then
+	mac=`ifconfig eth0|awk '/(HWaddr)/{print $5}' | tr ':' '-'`
+	ip=`cat /opt/sav/Config/network | grep HOSTIP | awk '/(HOSTIP)/{print $3}'`
+	echo "/mnt/debug/IPC/coredump.$mac.$ip.%e.%p.%t" > /proc/sys/kernel/core_pattern
+	ulimit -c unlimited
+fi
+
+# rm /opt/sav/Config/passwd*
+
+#
+#release mem
+rm -rf /var/ko.tar
+rm -rf /var/ko
+sync
+echo 3 > /proc/sys/vm/drop_caches
+#
+
+xapp=`awk '/^(xapp)/{ print $2 }' /proc/vss/bootpara`
+if [ $xapp == '1' ];then
+	/opt/app/bin/Kylin
+fi

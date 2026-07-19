@@ -1,0 +1,603 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <0x01>;
+	#size-cells = <0x01>;
+	model = "AXERA ax520 Spi-nor Demo Board";
+	compatible = "axera,ax520";
+
+	chosen {
+		bootargs = "console=ttyS0,115200 rdinit=/sbin/init";
+	};
+
+	cpus {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		enable-method = "axera,ax520";
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			clock-frequency = <0x3b9aca00>;
+			reg = <0x00>;
+		};
+	};
+
+	interrupt-controller@08f00000 {
+		compatible = "arm,cortex-a7-gic";
+		#interrupt-cells = <0x03>;
+		interrupt-controller;
+		reg = <0x8f01000 0x1000 0x8f02000 0x1000>;
+		linux,phandle = <0x01>;
+		phandle = <0x01>;
+	};
+
+	clk_apb {
+		compatible = "fixed-clock";
+		#clock-cells = <0x00>;
+		clock-frequency = <0x5f5e100>;
+		linux,phandle = <0x02>;
+		phandle = <0x02>;
+	};
+
+	clk_ahb {
+		compatible = "fixed-clock";
+		#clock-cells = <0x00>;
+		clock-frequency = <0xbebc200>;
+		linux,phandle = <0x04>;
+		phandle = <0x04>;
+	};
+
+	clk_sdio {
+		compatible = "fixed-clock";
+		#clock-cells = <0x00>;
+		clock-frequency = <0x2faf080>;
+		linux,phandle = <0x06>;
+		phandle = <0x06>;
+	};
+
+	clk_sfc {
+		compatible = "fixed-clock";
+		#clock-cells = <0x00>;
+		clock-frequency = <0xa21fe80>;
+		linux,phandle = <0x03>;
+		phandle = <0x03>;
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupt-parent = <0x01>;
+		clock-frequency = <0x16e3600>;
+		arm,cpu-registers-not-fw-configured;
+		interrupts = <0x01 0x0d 0xf08 0x01 0x0e 0xf08>;
+		status = "okay";
+	};
+
+	sensor@09000000 {
+		compatible = "axera,sensor-ax520";
+		reg = <0x9000000 0x1000>;
+	};
+
+	pm@09002000 {
+		compatible = "axera,pm-ax520";
+		reg = <0x9002000 0x1000>;
+	};
+
+	soc {
+		#address-cells = <0x01>;
+		#size-cells = <0x01>;
+		compatible = "simple-bus";
+		interrupt-parent = <0x01>;
+		ranges;
+
+		serial@090a0000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x90a0000 0x1000>;
+			interrupts = <0x00 0x0c 0x04>;
+			clock-frequency = <0x5f5e100>;
+			reg-shift = <0x02>;
+			reg-io-width = <0x04>;
+			status = "okay";
+		};
+
+		serial@090b0000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x90b0000 0x1000>;
+			interrupts = <0x00 0x0d 0x04>;
+			clocks = <0x02>;
+			clock-names = "apb_pclk";
+			clock-frequency = <0x5f5e100>;
+			reg-shift = <0x02>;
+			reg-io-width = <0x04>;
+			status = "okay";
+		};
+
+		serial@090c0000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x90c0000 0x1000>;
+			interrupts = <0x00 0x0e 0x04>;
+			clocks = <0x02>;
+			clock-names = "apb_pclk";
+			clock-frequency = <0x5f5e100>;
+			reg-shift = <0x02>;
+			reg-io-width = <0x04>;
+			status = "okay";
+		};
+
+		timer@0x09020000 {
+			compatible = "snps,dw-apb-timer";
+			interrupts = <0x00 0x01 0x04 0x00 0x02 0x04 0x00 0x03 0x04 0x00 0x04 0x04>;
+			reg = <0x9020000 0x1000>;
+			clocks = <0x02>;
+			clock-names = "apb_pclk";
+			wake-up-irq = <0x24>;
+			clock-frequency = <0x5f5e100>;
+		};
+
+		wdt@011a0000 {
+			compatible = "axera,wdt-dw110a";
+			clocks = <0x02>;
+			reg = <0x11a0000 0x1000>;
+			interrupts = <0x00 0x27 0x04>;
+			clock-frequency = <0x16e3600>;
+		};
+
+		syscounter@0b600000 {
+			compatible = "axera,syscnt-ax520";
+			reg = <0xb600000 0x1000>;
+		};
+
+		sfc@00300000 {
+			compatible = "snps,dw-apb-ssi";
+			interrupts = <0x00 0x18 0x04>;
+			reg = <0x300000 0x10000>;
+			reg-io-width = <0x04>;
+			num-cs = <0x01>;
+			bus-num = <0x00>;
+			quad-mode;
+			clocks = <0x03>;
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			status = "okay";
+
+			spi-nor@0 {
+				compatible = "jedec,spi-nor";
+				reg = <0x00>;
+				spi-max-frequency = <0x510ff40>;
+				max-fifo-len = <0x80>;
+				spi-rx-bus-width = <0x04>;
+				spi-tx-bus-width = <0x04>;
+
+				partitions {
+					compatible = "fixed-partitions";
+					#address-cells = <0x01>;
+					#size-cells = <0x01>;
+
+					partition@0 {
+						label = "mboot";
+						reg = <0x00 0x10000>;
+					};
+
+					partition@1 {
+						label = "boot";
+						reg = <0x10000 0x60000>;
+					};
+
+					partition@2 {
+						label = "kernel";
+						reg = <0x70000 0x140000>;
+					};
+
+					partition@3 {
+						label = "rootfs";
+						reg = <0x1b0000 0x2b0000>;
+					};
+
+					partition@4 {
+						label = "user";
+						reg = <0x460000 0x7f0000>;
+					};
+
+					partition@5 {
+						label = "web";
+						reg = <0xc50000 0x290000>;
+					};
+
+					partition@6 {
+						label = "custom";
+						reg = <0xee0000 0x50000>;
+					};
+
+					partition@7 {
+						label = "config";
+						reg = <0xf30000 0xc0000>;
+					};
+
+					partition@8 {
+						label = "encrypt";
+						reg = <0xff0000 0x10000>;
+					};
+
+					partition@9 {
+						label = "all";
+						reg = <0x00 0x1000000>;
+					};
+				};
+			};
+		};
+
+		ethernet@00200000 {
+			compatible = "snps,dwmac";
+			reg = <0x200000 0x2000>;
+			interrupt-parent = <0x01>;
+			interrupts = <0x00 0x1e 0x04>;
+			interrupt-names = "macirq";
+			clocks = <0x04>;
+			clock-names = "ni-gmac";
+			snps,pbl = <0x02>;
+			snps,fixed-burst;
+			phy-mode = "mii";
+			phy-handle = <0x05>;
+
+			mdio0 {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+				compatible = "snps,dwmac-mdio";
+
+				ethernet-phy@0 {
+					reg = <0x00>;
+					interrupt-parent = <0x01>;
+					interrupts = <0x00 0x3f 0x04>;
+					interrupt-names = "phyirq";
+					linux,phandle = <0x05>;
+					phandle = <0x05>;
+				};
+			};
+		};
+
+		sdio0@00400000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x400000 0x1000>;
+			interrupts = <0x00 0x14 0x04>;
+			interrupt-parent = <0x01>;
+			clocks = <0x06 0x06>;
+			clock-names = "biu", "ciu";
+			max-frequency = <0x2faf080>;
+			non-removable = "true";
+			cap-mmc-highspeed;
+			cap-sd-highspeed;
+			fifo-depth = <0x200>;
+			bus-width = <0x04>;
+			reset-names = "ni-reset";
+		};
+
+		sdio1@00500000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x500000 0x1000>;
+			interrupts = <0x00 0x15 0x04>;
+			interrupt-parent = <0x01>;
+			clocks = <0x06 0x06>;
+			clock-names = "biu", "ciu";
+			max-frequency = <0x2faf080>;
+			cap-mmc-highspeed;
+			cap-sd-highspeed;
+			fifo-depth = <0x200>;
+			bus-width = <0x04>;
+			reset-names = "ni-reset";
+			broken-cd;
+		};
+
+		hash@00600000 {
+			compatible = "axera,hash-ax520";
+			reg = <0x600000 0x10000>;
+			interrupts = <0x00 0x2f 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		usb@0b500000 {
+			compatible = "axera,fotg210";
+			reg = <0xb500000 0x10000>;
+			interrupts = <0x00 0x19 0x04 0x00 0x16 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		gpio@09040000 {
+			compatible = "snps,dw-apb-gpio";
+			reg = <0x9040000 0x1000>;
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			gpio-controller;
+			#gpio-cells = <0x02>;
+			base = <0x00>;
+			interrupt-parent = <0x01>;
+			interrupts = <0x00 0x0f 0x04>;
+			interrupt-names = "wakeup";
+		};
+
+		gpio@09050000 {
+			compatible = "snps,dw-apb-gpio";
+			reg = <0x9050000 0x1000>;
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			gpio-controller;
+			#gpio-cells = <0x02>;
+			base = <0x20>;
+			interrupt-parent = <0x01>;
+			interrupts = <0x00 0x13 0x04>;
+		};
+
+		gpio0@09040000 {
+			compatible = "axera,gpio-dw206c";
+			clocks = <0x02>;
+			reg = <0x9040000 0x1000>;
+			interrupts = <0x00 0x0f 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		gpio1@09050000 {
+			compatible = "axera,gpio-dw206c";
+			clocks = <0x02>;
+			reg = <0x9050000 0x1000>;
+			interrupts = <0x00 0x13 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		spi@09010000 {
+			compatible = "snps,dw-apb-ssi";
+			interrupts = <0x00 0x10 0x04>;
+			reg = <0x9010000 0x1000>;
+			reg-io-width = <0x04>;
+			num-cs = <0x01>;
+			bus-num = <0x01>;
+			clocks = <0x02>;
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			status = "okay";
+
+			motor@0 {
+				compatible = "axera,xmotor";
+				reg = <0x00>;
+				spi-max-frequency = <0x989680>;
+			};
+		};
+
+		i2c0@090E0000 {
+			compatible = "axera,i2c-dw201a";
+			clocks = <0x02>;
+			reg = <0x90e0000 0x1000 0x9000040 0x20>;
+			interrupts = <0x00 0x07 0x04>;
+			clock-frequency = <0x5f5e100>;
+			interrupt-parent = <0x01>;
+			fifo-size = <0x80>;
+		};
+
+		i2c1@090F0000 {
+			compatible = "axera,i2c-dw201a";
+			clocks = <0x02>;
+			reg = <0x90f0000 0x1000 0x9000040 0x20>;
+			interrupts = <0x00 0x08 0x04>;
+			clock-frequency = <0x5f5e100>;
+			interrupt-parent = <0x01>;
+			fifo-size = <0x80>;
+		};
+
+		i2c2@090D0000 {
+			compatible = "axera,i2c-dw201a";
+			clocks = <0x02>;
+			reg = <0x90d0000 0x1000 0x9000040 0x20>;
+			interrupts = <0x00 0x06 0x04>;
+			interrupt-parent = <0x01>;
+			clock-frequency = <0x5f5e100>;
+			fifo-size = <0x10>;
+		};
+
+		std_i2c0@090E0000 {
+			compatible = "axera,i2c-ax520";
+			clocks = <0x02>;
+			reg = <0x90e0000 0x1000 0x9000040 0x20>;
+			interrupts = <0x00 0x07 0x04>;
+			clock-frequency = <0x5f5e100>;
+			interrupt-parent = <0x01>;
+			fifo-size = <0x80>;
+		};
+
+		std_i2c1@090F0000 {
+			compatible = "axera,i2c-ax520";
+			clocks = <0x02>;
+			reg = <0x90f0000 0x1000 0x9000040 0x20>;
+			interrupts = <0x00 0x08 0x04>;
+			clock-frequency = <0x5f5e100>;
+			interrupt-parent = <0x01>;
+			fifo-size = <0x80>;
+		};
+
+		std_i2c2@090D0000 {
+			compatible = "axera,i2c-ax520";
+			clocks = <0x02>;
+			reg = <0x90d0000 0x1000 0x9000040 0x20>;
+			interrupts = <0x00 0x06 0x04>;
+			interrupt-parent = <0x01>;
+			clock-frequency = <0x5f5e100>;
+			fifo-size = <0x10>;
+		};
+
+		adcctl@01140000 {
+			compatible = "axera,adc-ax520";
+			clocks = <0x02>;
+			reg = <0x1140000 0x1000>;
+			interrupts = <0x00 0x1a 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		rtc@01160000 {
+			compatible = "axera,rtc-ax520";
+			clocks = <0x02>;
+			reg = <0x1160000 0x1000>;
+			interrupts = <0x00 0x05 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		pwm@09090000 {
+			compatible = "axera,pwm-ax520";
+			clocks = <0x02>;
+			reg = <0x9090000 0x1000>;
+			clock-frequency = <0x16e3600>;
+			interrupts = <0x00 0x12 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		trng@01190000 {
+			compatible = "axera,trng-ax520";
+			clocks = <0x02>;
+			reg = <0x1190000 0x1000>;
+		};
+
+		cipher@01130000 {
+			compatible = "axera,cipher-ax520";
+			clocks = <0x02>;
+			reg = <0x1130000 0x1000>;
+			interrupts = <0x00 0x2c 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		syncio0@01170000 {
+			compatible = "axera,syncio-ax520";
+			clocks = <0x02>;
+			reg = <0x1170000 0x50>;
+			interrupts = <0x00 0x09 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		syncio1@01171000 {
+			compatible = "axera,syncio-ax520";
+			clocks = <0x02>;
+			reg = <0x1171000 0x50>;
+			interrupts = <0x00 0x0a 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		syncio2@01172000 {
+			compatible = "axera,syncio-ax520";
+			clocks = <0x02>;
+			reg = <0x1172000 0x50>;
+			interrupts = <0x00 0x0b 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		audio@08b00000 {
+			compatible = "axera,audio-ax520";
+			clocks = <0x02>;
+			reg = <0x8b00000 0x1000>;
+			interrupts = <0x00 0x1c 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		sys@09000000 {
+			compatible = "axera,sys-ax520";
+			reg = <0x9000000 0x4000>;
+		};
+
+		viu@08100000 {
+			compatible = "axera,viu-ax520";
+			reg = <0x8100000 0x4000>;
+			interrupts = <0x00 0x35 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		vps@08200000 {
+			compatible = "axera,vps-ax520";
+			reg = <0x8200000 0x4000>;
+			interrupts = <0x00 0x2e 0x04 0x00 0x36 0x04 0x00 0x37 0x04 0x00 0x39 0x04 0x00 0x26 0x04 0x00 0x2b 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		enc@08400000 {
+			compatible = "axera,enc-ax520";
+			reg = <0x8400000 0x10000 0x8800000 0x10000>;
+			interrupts = <0x00 0x25 0x04 0x00 0x3b 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		vd@08200000 {
+			compatible = "axera,vd-ax520";
+			reg = <0x8200000 0x4000>;
+			interrupts = <0x00 0x2b 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		osd@08200000 {
+			compatible = "axera,osd-ax520";
+			reg = <0x8200000 0x4000>;
+			interrupts = <0x00 0x2b 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		isp@08600000 {
+			compatible = "axera,isp-ax520";
+			reg = <0x8600000 0x20000>;
+			interrupts = <0x00 0x20 0x04 0x00 0x21 0x04 0x00 0x22 0x04 0x00 0x23 0x04 0x00 0x24 0x04 0x00 0x2d 0x04 0x00 0x32 0x04 0x00 0x34 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		dvp@08a00000 {
+			compatible = "axera,dvp-ax520";
+			reg = <0x8a00000 0x4000>;
+			interrupts = <0x00 0x1f 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		xsnn@08900000 {
+			compatible = "axera,xsnn-ax520";
+			reg = <0x8900000 0x1000>;
+			interrupts = <0x00 0x2a 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		encdpre@08500000 {
+			compatible = "axera,encdpre-ax520";
+			reg = <0x8500000 0x10000>;
+			interrupts = <0x00 0x26 0x04>;
+			interrupt-parent = <0x01>;
+		};
+
+		secondary@0B000000 {
+			compatible = "axera,subcore-ax520";
+			reg = <0xb000000 0x10000 0x9000000 0x10000 0x11000000 0x1000000>;
+			interrupts = <0x00 0x29 0x04>;
+		};
+
+		mailbox@0B010000 {
+			compatible = "axera,mbx-ax520";
+			reg = <0xb010000 0x10000 0x10001000 0x1000>;
+			interrupts = <0x00 0x31 0x04>;
+			cpuid = <0x00>;
+		};
+	};
+
+	aliases {
+		serial0 = "/soc/serial@090a0000";
+		serial1 = "/soc/serial@090b0000";
+		serial2 = "/soc/serial@090c0000";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x10000000 0x10000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <0x01>;
+		#size-cells = <0x01>;
+		ranges;
+
+		slave-bootargs@10000000 {
+			compatible = "ax520,reserved";
+			reg = <0x10000000 0x1000>;
+		};
+
+		mailbox-node@10001000 {
+			compatible = "ax520,mailbox-node";
+			reg = <0x10001000 0x1000>;
+		};
+	};
+};

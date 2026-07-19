@@ -1,0 +1,194 @@
+/dts-v1/;
+
+/ {
+	compatible = "ax,ax520";
+	#address-cells = <0x01>;
+	#size-cells = <0x01>;
+	model = "axera ax520";
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <0x01>;
+		#size-cells = <0x01>;
+
+		apb-clock {
+			#clock-cells = <0x00>;
+			compatible = "fixed-clock";
+			clock-frequency = <0x2faf080>;
+			clock-output-names = "dummy_apb";
+			phandle = <0x02>;
+		};
+
+		ahb-clock {
+			#clock-cells = <0x00>;
+			compatible = "fixed-clock";
+			clock-frequency = <0xbebc200>;
+			clock-output-names = "dummy_ahb";
+		};
+
+		x2p1-clock {
+			#clock-cells = <0x00>;
+			compatible = "fixed-clock";
+			clock-frequency = <0x5f5e100>;
+			clock-output-names = "dummy_x2p1";
+			phandle = <0x01>;
+		};
+
+		sfc-clock {
+			#clock-cells = <0x00>;
+			compatible = "fixed-clock";
+			clock-frequency = <0xa21fe80>;
+			clock-output-names = "dummy_sfc";
+			phandle = <0x04>;
+		};
+
+		1000mhz-clock {
+			#clock-cells = <0x00>;
+			compatible = "fixed-clock";
+			clock-frequency = <0x3b9aca00>;
+			clock-output-names = "dummy_1000mhz";
+		};
+
+		serial@090A0000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x90a0000 0x400>;
+			clock-frequency = <0x5f5e100>;
+			reg-shift = <0x02>;
+			reg-io-width = <0x04>;
+			u-boot,dm-pre-reloc;
+			status = "okay";
+		};
+
+		timer@09020000 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x9020000 0x100>;
+			clocks = <0x01>;
+			clock-names = "timer";
+			status = "okay";
+		};
+
+		wtd@011A0000 {
+			compatible = "axera,wtd-dh8000";
+			clocks = <0x02>;
+			reg = <0x11a0000 0x1000>;
+		};
+
+		ethernet@00200000 {
+			compatible = "st,stm32-dwmac";
+			reg = <0x200000 0x2000>;
+			reg-names = "stmmaceth";
+			clocks = <0x02>;
+			clock-names = "stmmaceth";
+			snps,pbl = <0x08>;
+			snps,mixed-burst;
+			dma-ranges;
+			phy-mode = "mii";
+			phy-handle = <0x03>;
+
+			mdio0 {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+				compatible = "snps,dwmac-mdio";
+				#compatible = "RealTek RTL8201F";
+
+				ethernet-phy@0 {
+					reg = <0x00>;
+					phandle = <0x03>;
+				};
+			};
+		};
+
+		sfc@00300000 {
+			status = "okay";
+			compatible = "snps,dw-apb-ssi";
+			reg = <0x300000 0x1000>;
+			reg-io-width = <0x04>;
+			num-cs = <0x02>;
+			clocks = <0x04>;
+			spi-max-frequency = <0x510ff40>;
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			spi-flash@0 {
+				compatible = "jedec,spi-nor";
+				reg = <0x00>;
+				spi-max-frequency = <0x510ff40>;
+				spi-rx-bus-width = <0x04>;
+				spi-tx-bus-width = <0x04>;
+			};
+
+			spi-nand@1 {
+				compatible = "spi-nand";
+				reg = <0x00>;
+				spi-max-frequency = <0x510ff40>;
+				spi-rx-bus-width = <0x04>;
+				spi-tx-bus-width = <0x04>;
+			};
+		};
+
+		gpio@09040000 {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			compatible = "snps,dw-apb-gpio";
+			reg = <0x9040000 0x1000>;
+
+			gpio-controller@09040000 {
+				compatible = "snps,dw-apb-gpio-port";
+				gpio-controller;
+				#gpio-cells = <0x02>;
+				snps,nr-gpios = <0x20>;
+				reg = <0x00>;
+			};
+		};
+
+		0x09050000 {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			compatible = "snps,dw-apb-gpio";
+			reg = <0x9050000 0x1000>;
+
+			gpio-controller@09050000 {
+				compatible = "snps,dw-apb-gpio-port";
+				gpio-controller;
+				#gpio-cells = <0x02>;
+				snps,nr-gpios = <0x20>;
+				reg = <0x00>;
+			};
+		};
+
+		dwmmc@00400000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x400000 0x10000>;
+			clocks = <0x02 0x02>;
+			clock-names = "biu", "ciu";
+			max-frequency = <0x2faf080>;
+			bus-width = <0x04>;
+			non-removable = "true";
+			fifo-depth = <0x80>;
+			fifo-mode = "true";
+		};
+
+		dwmmc@00500000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x500000 0x10000>;
+			clocks = <0x02 0x02>;
+			clock-names = "biu", "ciu";
+			max-frequency = <0x2faf080>;
+			bus-width = <0x04>;
+			non-removable = "true";
+			fifo-depth = <0x80>;
+			fifo-mode = "true";
+		};
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		tick-timer = "/soc/timer@09020000";
+	};
+
+	aliases {
+		serial0 = "/soc/serial@090A0000";
+		timer0 = "/soc/timer@09020000";
+		spi0 = "/soc/sfc@00300000";
+	};
+};

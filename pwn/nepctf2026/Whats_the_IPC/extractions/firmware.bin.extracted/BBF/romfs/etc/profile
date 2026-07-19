@@ -1,0 +1,30 @@
+# /etc/profile: system-wide .profile file for the Bourne shells
+
+echo
+echo "Processing /etc/profile..."
+# no-op
+
+# Set search library path
+#echo "  Set search library path in /etc/profile"
+#export LD_LIBRARY_PATH=/lib:/usr/lib 
+
+# Set user path
+echo "  Set user path in /etc/profile"
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/xsbin:/usr:$PYTHONHOME:$PYTHONPATH
+export PATH 
+
+#ANDROID_ROOT=/android
+#export ANDROID_ROOT
+
+#ANDROID_DATA=$ANDROID_ROOT
+#export ANDROID_DATA
+
+#BOOTCLASSPATH=$ANDROID_ROOT/lib/core.jar:$ANDROID_ROOT/lib/ext.jar
+#:$ANDROID_ROOT/lib/framework.jar:$ANDROID_ROOT/lib/android.policy.jar:$ANDROID_ROOT/lib/services.jar
+#export BOOTCLASSPATH
+# Set PS1
+#echo "  Set PS1 in /etc/profile"
+#export PS1="\\e[05;32m[$USER@\\w\\a]\\$\\e[00;34m"
+
+ulimit -c unlimited
+echo "Done"
