@@ -55,13 +55,14 @@ http://192.168.122.16/upload/shell.php
 ### Pass-2
 查看源码：
 ``` php
+<?php>
 $is_upload = false;
 $msg = null;
 if (isset($_POST['submit'])) {
     if (file_exists(UPLOAD_PATH)) {
         if (($_FILES['upload_file']['type'] == 'image/jpeg') || ($_FILES['upload_file']['type'] == 'image/png') || ($_FILES['upload_file']['type'] == 'image/gif')) {
             $temp_file = $_FILES['upload_file']['tmp_name'];
-            $img_path = UPLOAD_PATH . '/' . $_FILES['upload_file']['name']            
+            $img_path = UPLOAD_PATH . '/' . $_FILES['upload_file']['name'];
             if (move_uploaded_file($temp_file, $img_path)) {
                 $is_upload = true;
             } else {
@@ -78,6 +79,7 @@ if (isset($_POST['submit'])) {
 
 仅作文件类型的 mime 判断，也就是在 http 头限制。  
 ``` php
+<?php
 if (($_FILES['upload_file']['type'] == 'image/jpeg') || ($_FILES['upload_file']['type'] == 'image/png') || ($_FILES['upload_file']['type'] == 'image/gif')) {
 ```
 
@@ -85,6 +87,8 @@ if (($_FILES['upload_file']['type'] == 'image/jpeg') || ($_FILES['upload_file'][
 ``` html
 Content-Type: application/x-php
 ```
+
+这里被信任的是 multipart 文件 part 的 `Content-Type` 不是整个 HTTP 请求的 `Content-Type`。  
 
 ### Pass-3
 这关过滤了 .asp,.aspx,.php,.jsp后缀文件，而且做了文件名的修改。  
@@ -128,6 +132,7 @@ AddType application/x-httpd-php .php .phtml .phps .php5 .pht
 ## Pass-4
 这里过滤面更大，基本上都给过滤掉了……  
 ``` php
+<?php
 $is_upload = false;
 $msg = null;
 if (isset($_POST['submit'])) {
@@ -179,6 +184,7 @@ SetHandler application/x-httpd-php
 
 ### Pass-5
 ``` php
+<?php
 $is_upload = false;
 $msg = null;
 if (isset($_POST['submit'])) {
@@ -206,5 +212,5 @@ if (isset($_POST['submit'])) {
     }
 }
 ```
-
-没改大小写，直接大写 PHP 直接过。  
+代码删除了 `$file_ext` 的大小写规范化，却使用了大小写敏感的 `in_array()` 比较。  
+没改大小写，直接大写 PHP 直接过。缺少大小写规范化，造成大小写绕过。  
